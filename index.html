@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kit Checker — Your kit bag, mirrored</title>
+<meta name="description" content="Kit Checker is an offline-first app that lets prehospital practitioners build a digital mirror of their kit bag and use it to conduct, record, and evidence kit checks — entirely on-device. No accounts, no analytics, no data collection.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:            #12161a;
+    --panel:         #1a2025;
+    --panel-raised:  #1f262c;
+    --line:          #2a3238;
+    --line-soft:     #232a30;
+    --text:          #edf1f3;
+    --text-dim:      #9aa5ad;
+    --text-faint:    #5f6a71;
+    --teal:          #35b3ab;
+    --teal-dim:      #1f6f6a;
+    --red:           #c1503a;
+    --font-display:  'Space Grotesk', sans-serif;
+    --font-body:     'IBM Plex Sans', sans-serif;
+    --font-mono:     'IBM Plex Mono', monospace;
+    --max: 1080px;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+  }
+
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  a{ color:inherit; }
+
+  ::selection{ background:var(--teal-dim); color:var(--text); }
+
+  :focus-visible{
+    outline:2px solid var(--teal);
+    outline-offset:3px;
+  }
+
+  .wrap{
+    max-width:var(--max);
+    margin:0 auto;
+    padding:0 28px;
+  }
+
+  /* ---------- NAV ---------- */
+  header.site{
+    position:sticky; top:0; z-index:40;
+    background:rgba(18,22,26,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px;
+    max-width:var(--max); margin:0 auto;
+  }
+  .brand{
+    display:flex; align-items:center; gap:10px;
+    font-family:var(--font-display); font-weight:600; font-size:17px;
+    letter-spacing:0.01em;
+    text-decoration:none;
+  }
+  .brand .mark{
+    width:20px; height:20px; border-radius:4px;
+    background:var(--red);
+    position:relative; flex:none;
+  }
+  .brand .mark::after{
+    content:"";
+    position:absolute; left:50%; top:50%;
+    width:9px; height:6px;
+    border-left:2px solid #fff; border-bottom:2px solid #fff;
+    transform:translate(-58%,-65%) rotate(-45deg);
+  }
+  nav.links{ display:flex; gap:28px; font-size:14px; }
+  nav.links a{
+    text-decoration:none; color:var(--text-dim);
+    transition:color .15s ease;
+  }
+  nav.links a:hover{ color:var(--text); }
+
+  /* ---------- HERO ---------- */
+  .hero{
+    padding:88px 0 72px;
+    border-bottom:1px solid var(--line-soft);
+  }
+  .hero-grid{
+    display:grid;
+    grid-template-columns:1.05fr 0.95fr;
+    gap:56px;
+    align-items:center;
+  }
+  .eyebrow{
+    font-family:var(--font-mono);
+    font-size:12px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--teal);
+    display:flex; align-items:center; gap:10px;
+    margin-bottom:20px;
+  }
+  .eyebrow::before{
+    content:""; width:7px; height:7px; background:var(--teal); border-radius:1px;
+    display:inline-block;
+  }
+  h1{
+    font-family:var(--font-display);
+    font-weight:700;
+    font-size:clamp(38px, 5.2vw, 58px);
+    line-height:1.04;
+    letter-spacing:-0.01em;
+    margin:0 0 22px;
+  }
+  h1 em{
+    font-style:normal;
+    color:var(--teal);
+  }
+  .hero p.lede{
+    font-size:17px;
+    color:var(--text-dim);
+    max-width:46ch;
+    margin:0 0 32px;
+  }
+  .cta-row{ display:flex; gap:14px; flex-wrap:wrap; }
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:13px 22px;
+    border-radius:8px;
+    font-size:14px; font-weight:600;
+    text-decoration:none;
+    border:1px solid transparent;
+    transition:transform .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .btn-primary{
+    background:var(--teal); color:#0c1517;
+  }
+  .btn-primary:hover{ transform:translateY(-1px); background:#3ec1b8; }
+  .btn-ghost{
+    border-color:var(--line);
+    color:var(--text);
+  }
+  .btn-ghost:hover{ border-color:var(--teal-dim); }
+
+  /* ---------- MANIFEST (signature element) ---------- */
+  .manifest{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:22px 22px 24px;
+    font-family:var(--font-mono);
+    font-size:13.5px;
+  }
+  .manifest .m-head{
+    display:flex; justify-content:space-between; align-items:baseline;
+    color:var(--text-faint);
+    font-size:11px; letter-spacing:0.08em; text-transform:uppercase;
+    border-bottom:1px solid var(--line-soft);
+    padding-bottom:12px; margin-bottom:12px;
+  }
+  .manifest ul{ list-style:none; margin:0; padding:0; }
+  .manifest .compartment{ margin-bottom:14px; }
+  .manifest .compartment:last-child{ margin-bottom:0; }
+  .compartment > .row{
+    color:var(--text-dim);
+    font-weight:500;
+    margin-bottom:6px;
+  }
+  .compartment ul{ padding-left:18px; border-left:1px solid var(--line-soft); }
+  .compartment li.row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:5px 0;
+    color:var(--text);
+    opacity:0;
+    animation:reveal .45s ease forwards;
+  }
+  .compartment li.row .tick{
+    width:15px; height:15px; border-radius:4px;
+    border:1px solid var(--teal-dim);
+    position:relative; flex:none; margin-right:10px;
+    opacity:0;
+    animation:pop .3s ease forwards;
+  }
+  .compartment li.row .tick::after{
+    content:"";
+    position:absolute; left:3px; top:1px;
+    width:6px; height:9px;
+    border-right:2px solid var(--teal); border-bottom:2px solid var(--teal);
+    transform:rotate(38deg);
+  }
+  .compartment li.row .label{ flex:1; }
+  .compartment li.row .qty{ color:var(--text-faint); margin-left:10px; }
+
+  @keyframes reveal{ to{ opacity:1; } }
+  @keyframes pop{ to{ opacity:1; } }
+
+  .row.item-1{ animation-delay:.5s; }  .row.item-1 .tick{ animation-delay:.75s; }
+  .row.item-2{ animation-delay:.7s; }  .row.item-2 .tick{ animation-delay:.95s; }
+  .row.item-3{ animation-delay:1.1s; } .row.item-3 .tick{ animation-delay:1.35s; }
+  .row.item-4{ animation-delay:1.3s; } .row.item-4 .tick{ animation-delay:1.55s; }
+  .row.item-5{ animation-delay:1.7s; } .row.item-5 .tick{ animation-delay:1.95s; }
+  .row.item-6{ animation-delay:1.9s; } .row.item-6 .tick{ animation-delay:2.15s; }
+
+  .manifest .m-foot{
+    margin-top:14px; padding-top:12px;
+    border-top:1px solid var(--line-soft);
+    color:var(--text-faint);
+    font-size:11.5px;
+    display:flex; justify-content:space-between;
+  }
+
+  /* ---------- SECTION SHARED ---------- */
+  section{ padding:76px 0; border-bottom:1px solid var(--line-soft); }
+  .section-head{ max-width:60ch; margin-bottom:44px; }
+  .section-head .eyebrow{ margin-bottom:14px; }
+  h2{
+    font-family:var(--font-display);
+    font-weight:600;
+    font-size:clamp(26px, 3.4vw, 34px);
+    letter-spacing:-0.01em;
+    margin:0 0 14px;
+  }
+  .section-head p{ color:var(--text-dim); font-size:15.5px; margin:0; }
+
+  /* ---------- POSITIONING (the gap) ---------- */
+  .gap-row{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:16px;
+  }
+  .gap-card{
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:22px 20px;
+    background:var(--panel);
+  }
+  .gap-card h3{
+    font-family:var(--font-mono);
+    font-size:12.5px;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--text-faint);
+    margin:0 0 10px;
+    font-weight:500;
+  }
+  .gap-card p{ margin:0; font-size:14.5px; color:var(--text-dim); }
+  .gap-card.mid{
+    background:linear-gradient(180deg, rgba(53,179,171,0.10), rgba(53,179,171,0.02));
+    border-color:var(--teal-dim);
+  }
+  .gap-card.mid h3{ color:var(--teal); }
+  .gap-card.mid p{ color:var(--text); }
+
+  /* ---------- PRINCIPLES ---------- */
+  .principles{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:1px;
+    background:var(--line-soft);
+    border:1px solid var(--line-soft);
+    border-radius:10px;
+    overflow:hidden;
+  }
+  .principle{
+    background:var(--panel);
+    padding:26px 22px;
+  }
+  .principle .tag{
+    font-family:var(--font-mono);
+    font-size:11px;
+    color:var(--teal);
+    letter-spacing:0.08em;
+    margin-bottom:14px;
+  }
+  .principle h3{
+    font-family:var(--font-display);
+    font-size:17px;
+    margin:0 0 8px;
+    font-weight:600;
+  }
+  .principle p{
+    font-size:13.5px;
+    color:var(--text-dim);
+    margin:0;
+  }
+
+  /* ---------- ROSTER (who it's for) ---------- */
+  .roster{
+    display:flex; flex-wrap:wrap; gap:10px;
+  }
+  .roster span{
+    font-family:var(--font-mono);
+    font-size:13px;
+    color:var(--text-dim);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:8px 13px;
+  }
+
+  /* ---------- PRIVACY ---------- */
+  .privacy-block{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:48px;
+    align-items:start;
+  }
+  .privacy-list{ list-style:none; margin:0; padding:0; }
+  .privacy-list li{
+    display:flex; gap:12px;
+    padding:12px 0;
+    border-bottom:1px solid var(--line-soft);
+    font-size:14.5px;
+    color:var(--text-dim);
+  }
+  .privacy-list li:last-child{ border-bottom:none; }
+  .privacy-list li::before{
+    content:"—";
+    color:var(--teal);
+    flex:none;
+  }
+  .privacy-list li strong{ color:var(--text); font-weight:600; }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    padding:40px 0 56px;
+  }
+  .foot-row{
+    display:flex; justify-content:space-between; align-items:center;
+    flex-wrap:wrap; gap:16px;
+  }
+  .foot-links{ display:flex; gap:22px; font-size:13.5px; }
+  .foot-links a{ text-decoration:none; color:var(--text-dim); }
+  .foot-links a:hover{ color:var(--text); }
+  .foot-note{ font-size:12.5px; color:var(--text-faint); }
+
+  @media (max-width: 860px){
+    .hero-grid{ grid-template-columns:1fr; }
+    .gap-row{ grid-template-columns:1fr; }
+    .principles{ grid-template-columns:1fr 1fr; }
+    .privacy-block{ grid-template-columns:1fr; }
+    nav.links{ display:none; }
+  }
+  @media (max-width: 520px){
+    .principles{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="nav">
+    <a class="brand" href="#top">
+      <span class="mark" aria-hidden="true"></span>
+      Kit Checker
+    </a>
+    <nav class="links">
+      <a href="#gap">Why it's different</a>
+      <a href="#principles">Principles</a>
+      <a href="#privacy">Privacy</a>
+      <a href="privacy-policy.html">Privacy Policy</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Offline · On-device · No accounts</p>
+        <h1>Your kit bag,<br><em>mirrored.</em></h1>
+        <p class="lede">
+          Kit Checker is an offline-first app for prehospital practitioners.
+          Build a digital hierarchy that matches your physical kit bag —
+          compartment by compartment, item by item — then use it to conduct,
+          record, and evidence kit checks without ever touching a network.
+        </p>
+        <div class="cta-row">
+          <a class="btn btn-primary" href="#">View on the App Store</a>
+          <a class="btn btn-ghost" href="privacy-policy.html">Read the privacy policy</a>
+        </div>
+      </div>
+
+      <div class="manifest" aria-hidden="true">
+        <div class="m-head">
+          <span>HEMS Response Bag</span>
+          <span>Kit Check</span>
+        </div>
+        <ul>
+          <li class="compartment">
+            <div class="row">Airway compartment</div>
+            <ul>
+              <li class="row item-1"><span class="tick"></span><span class="label">Laryngoscope</span><span class="qty">×1</span></li>
+              <li class="row item-2"><span class="tick"></span><span class="label">ET tubes</span><span class="qty">×6</span></li>
+            </ul>
+          </li>
+          <li class="compartment">
+            <div class="row">Circulation compartment</div>
+            <ul>
+              <li class="row item-3"><span class="tick"></span><span class="label">Tourniquet</span><span class="qty">×2</span></li>
+              <li class="row item-4"><span class="tick"></span><span class="label">IV cannulas</span><span class="qty">×10</span></li>
+            </ul>
+          </li>
+          <li class="compartment">
+            <div class="row">Drugs compartment</div>
+            <ul>
+              <li class="row item-5"><span class="tick"></span><span class="label">Adrenaline 1:10,000</span><span class="qty">×4</span></li>
+              <li class="row item-6"><span class="tick"></span><span class="label">Ondansetron</span><span class="qty">×2</span></li>
+            </ul>
+          </li>
+        </ul>
+        <div class="m-foot">
+          <span>6 of 6 checked</span>
+          <span>Recorded on-device</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="gap">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">The gap</p>
+        <h2>Between too simple and too heavy</h2>
+        <p>Most kit-checking tools sit at one extreme or the other. Kit Checker was built for the space in between.</p>
+      </div>
+      <div class="gap-row">
+        <div class="gap-card">
+          <h3>Fixed checklists</h3>
+          <p>Basic apps assume every kit bag looks the same. They give you a flat list, not a structure — no compartments, no hierarchy, no way to reflect how your bag actually works.</p>
+        </div>
+        <div class="gap-card mid">
+          <h3>Kit Checker</h3>
+          <p>Your hierarchy, your items, your schedules — checked and recorded entirely offline, on the device already in your pocket.</p>
+        </div>
+        <div class="gap-card">
+          <h3>Enterprise platforms</h3>
+          <p>Agency-wide systems are cloud-dependent and built for whole organisations. They're overkill for an individual practitioner or a small team who just needs their own kit checked properly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="principles">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Design principles</p>
+        <h2>Built the way kit itself is trusted</h2>
+        <p>Four commitments that shaped every decision in the app, from the data model up.</p>
+      </div>
+      <div class="principles">
+        <div class="principle">
+          <div class="tag">01 STRUCTURE</div>
+          <h3>Structural fidelity</h3>
+          <p>Your digital kit hierarchy matches your physical kit — not a generic template someone else designed.</p>
+        </div>
+        <div class="principle">
+          <div class="tag">02 CONNECTIVITY</div>
+          <h3>Fully offline</h3>
+          <p>No internet connection is ever required to build, check, or record against your kit.</p>
+        </div>
+        <div class="principle">
+          <div class="tag">03 DATA</div>
+          <h3>No data collection</h3>
+          <p>No accounts, no analytics, no telemetry. Nothing leaves your device without your explicit action.</p>
+        </div>
+        <div class="principle">
+          <div class="tag">04 CONTROL</div>
+          <h3>User autonomy</h3>
+          <p>The app ships empty. You define your own structure, categories, and schedules from the ground up.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="who">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Built for</p>
+        <h2>Anyone accountable for a kit bag</h2>
+        <p>Kit Checker is designed around individual practitioners and small teams — not agency-wide procurement.</p>
+      </div>
+      <div class="roster">
+        <span>HEMS &amp; air ambulance crew</span>
+        <span>Community First Responders</span>
+        <span>Event medical teams</span>
+        <span>Search &amp; rescue</span>
+        <span>Wilderness medicine</span>
+        <span>Offshore &amp; industrial medics</span>
+        <span>NHS HART teams</span>
+        <span>Ski patrol</span>
+        <span>St John Ambulance volunteers</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap privacy-block">
+      <div class="section-head" style="margin-bottom:0;">
+        <p class="eyebrow">Privacy</p>
+        <h2>Nothing to collect, because nothing leaves the device</h2>
+        <p>Kit Checker was built offline-first from day one. That's not a setting you can find and turn off — it's the foundation the app is built on.</p>
+      </div>
+      <ul class="privacy-list">
+        <li><strong>No accounts.</strong> There's nothing to sign up for and nothing to log into.</li>
+        <li><strong>No analytics.</strong> Your usage of the app is never measured, tracked, or reported.</li>
+        <li><strong>No telemetry.</strong> The app doesn't phone home, ever.</li>
+        <li><strong>No sharing without action.</strong> Data only ever leaves your device if you explicitly export or share it yourself.</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-row">
+    <div class="foot-note">© 2026 Kit Checker. Built for the people who check kit before it matters.</div>
+    <div class="foot-links">
+      <a href="privacy-policy.html">Privacy Policy</a>
+      <a href="#gap">Why it's different</a>
+      <a href="#principles">Principles</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
