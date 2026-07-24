@@ -8,6 +8,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <style>
   :root{
     --bg:            #12161a;
@@ -65,15 +69,9 @@
     text-decoration:none; color:var(--text);
   }
   .brand .mark{
-    width:20px; height:20px; border-radius:4px;
-    background:var(--red); position:relative; flex:none;
-  }
-  .brand .mark::after{
-    content:"";
-    position:absolute; left:50%; top:50%;
-    width:9px; height:6px;
-    border-left:2px solid #fff; border-bottom:2px solid #fff;
-    transform:translate(-58%,-65%) rotate(-45deg);
+    width:28px; height:28px;
+    flex:none;
+    display:block;
   }
   .back{
     font-size:14px; color:var(--text-dim); text-decoration:none;
@@ -214,7 +212,7 @@
 <header class="site">
   <div class="nav">
     <a class="brand" href="index.html">
-      <span class="mark" aria-hidden="true"></span>
+      <img class="mark" src="icon-nav.png" width="28" height="28" alt="" aria-hidden="true">
       Kit Checker
     </a>
     <a class="back" href="index.html">← Back to Kit Checker</a>
